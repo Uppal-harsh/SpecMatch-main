@@ -269,7 +269,11 @@ export default function SmartphoneWizard() {
             {currentStep < 8 ? (
               <button 
                 onClick={handleNext}
-                disabled={!wizardAnswers[currentStep] || (Array.isArray(wizardAnswers[currentStep]) && wizardAnswers[currentStep].length === 0)}
+                disabled={
+                  currentStep === 7 
+                    ? (!wizardAnswers["7_0"] || !wizardAnswers["7_1"] || !wizardAnswers["7_2"])
+                    : (!wizardAnswers[currentStep] || (Array.isArray(wizardAnswers[currentStep]) && wizardAnswers[currentStep].length === 0))
+                }
                 className="px-6 py-2.5 rounded-xl bg-text text-background font-body font-bold hover:bg-muted transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next Step

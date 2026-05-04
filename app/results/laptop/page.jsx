@@ -8,34 +8,37 @@ import { ArrowLeft, Bookmark, Check } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-// Mock API Response
-const MOCK_RESULT = {
-  name: "MacBook Air M3 (13-inch)",
-  brand: "Apple",
-  category: "Laptop",
-  image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1000&auto=format&fit=crop",
-  matchScore: 92,
-  specs: ["Apple M3 Chip", "16GB Unified Memory", "512GB SSD", "13.6\" Liquid Retina", "1.24 kg"],
-  whyThisDevice: "Based on your preference for an ultra-portable device for coding and everyday productivity, the MacBook Air M3 is the absolute best choice. It offers up to 18 hours of battery life, saving you from needing a charger all day, and provides phenomenal performance without any fan noise.",
-  prices: [
-    { name: "Amazon", price: 134900, rating: 4.8, link: "#amazon" },
-    { name: "Flipkart", price: 135900, rating: 4.7, link: "#flipkart" },
-    { name: "Croma", price: 134900, rating: 4.8, link: "#croma" },
-    { name: "Vijay Sales", price: 136900, rating: 4.5, link: "#vijay" },
-    { name: "Reliance Digital", price: 134900, rating: 4.6, link: "#reliance" }
-  ]
-};
+import { LAPTOPS } from "@/lib/deviceData";
 
 export default function LaptopResults() {
   const router = useRouter();
-  const { savePreset } = useStore();
+  const { savePreset, filters } = useStore();
   const [saved, setSaved] = useState(false);
   const [showPrices, setShowPrices] = useState(true);
+
+  // Dynamic selection logic
+  const getBestMatch = () => {
+    const preferredBrands = filters.filter(f => ["Apple", "Dell", "HP", "Lenovo", "Asus", "MSI", "Acer"].includes(f));
+    
+    // Filter by brand if user selected any
+    let candidates = LAPTOPS;
+    if (preferredBrands.length > 0) {
+      candidates = LAPTOPS.filter(l => preferredBrands.includes(l.brand));
+    }
+    
+    // If no brand match or no brands selected, use all laptops
+    if (candidates.length === 0) candidates = LAPTOPS;
+
+    // Pick the one with highest match score (or just the first for now as they are pre-scored)
+    return candidates[0] || LAPTOPS[0];
+  };
+
+  const result = getBestMatch();
 
   const handleSave = () => {
     savePreset({
       id: Date.now().toString(),
-      title: `💻 ${MOCK_RESULT.name} Search`,
+      title: `💻 ${result.name} Search`,
       details: "Auto-saved comparison from laptop wizard.",
       savedAt: "Just now"
     });
@@ -79,7 +82,7 @@ export default function LaptopResults() {
             
             {/* Image (Mocked) */}
             <div className="w-full md:w-1/3 aspect-[4/3] rounded-2xl bg-background border border-border overflow-hidden shrink-0 relative group">
-              <img src={MOCK_RESULT.image} alt={MOCK_RESULT.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <img src={result.image} alt={result.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
             </div>
 
@@ -88,16 +91,16 @@ export default function LaptopResults() {
               <div>
                 <div className="flex justify-between items-start mb-1">
                   <div>
-                    <h3 className="text-muted font-body font-bold text-sm mb-1">{MOCK_RESULT.brand}</h3>
-                    <h1 className="font-display font-extrabold text-3xl md:text-5xl text-text leading-tight mb-4">{MOCK_RESULT.name}</h1>
+                    <h3 className="text-muted font-body font-bold text-sm mb-1">{result.brand}</h3>
+                    <h1 className="font-display font-extrabold text-3xl md:text-5xl text-text leading-tight mb-4">{result.name}</h1>
                   </div>
-                  <MatchScoreRing score={MOCK_RESULT.matchScore} />
+                  <MatchScoreRing score={result.matchScore} />
                 </div>
 
                 <hr className="border-border/50 mb-4" />
 
                 <div className="flex flex-wrap gap-2 mb-6">
-                  {MOCK_RESULT.specs.map(s => (
+                  {result.specs.map(s => (
                     <span key={s} className="bg-background border border-border/50 text-text font-mono text-xs px-3 py-1.5 rounded-lg shadow-sm">
                       {s}
                     </span>
@@ -111,7 +114,7 @@ export default function LaptopResults() {
                     <span className="text-sm">✦</span> Why This Device
                   </span>
                   <p className="font-body text-sm text-text/90 leading-relaxed mt-1">
-                    {MOCK_RESULT.whyThisDevice}
+                    {result.description}
                   </p>
                 </div>
               </div>
@@ -145,7 +148,7 @@ export default function LaptopResults() {
               transition={{ duration: 0.4 }}
               className="w-full"
             >
-              <PriceComparisonTable prices={MOCK_RESULT.prices} />
+              <PriceComparisonTable prices={result.prices} />
             </motion.div>
           )}
         </AnimatePresence>

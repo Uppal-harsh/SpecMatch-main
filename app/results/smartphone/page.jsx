@@ -8,34 +8,37 @@ import { ArrowLeft, Bookmark, Check } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-// Mock API Response
-const MOCK_RESULT = {
-  name: "Samsung Galaxy S24 Ultra",
-  brand: "Samsung",
-  category: "Smartphone",
-  image: "https://images.unsplash.com/photo-1707055964096-ed7a4891129f?q=80&w=1000&auto=format&fit=crop",
-  matchScore: 94,
-  specs: ["Snapdragon 8 Gen 3", "5000 mAh", "200MP Quad Camera", "6.8\" Dynamic AMOLED 2X"],
-  whyThisDevice: "Based on your preference for an elite camera and a large battery, the Galaxy S24 Ultra is your top match. Its 200MP camera system is industry-leading, and the 5000 mAh battery comfortably handles heavy usage. It also fits your selected budget and brand preference.",
-  prices: [
-    { name: "Amazon", price: 129999, rating: 4.6, link: "#amazon" },
-    { name: "Flipkart", price: 131999, rating: 4.5, link: "#flipkart" },
-    { name: "Croma", price: 129999, rating: 4.8, link: "#croma" },
-    { name: "Vijay Sales", price: 130999, rating: 4.4, link: "#vijay" },
-    { name: "Reliance Digital", price: 134999, rating: 4.3, link: "#reliance" }
-  ]
-};
+import { SMARTPHONES } from "@/lib/deviceData";
 
 export default function SmartphoneResults() {
   const router = useRouter();
-  const { savePreset, wizardAnswers } = useStore();
+  const { savePreset, wizardAnswers, filters } = useStore();
   const [saved, setSaved] = useState(false);
   const [showPrices, setShowPrices] = useState(true);
+
+  // Dynamic selection logic
+  const getBestMatch = () => {
+    const preferredBrands = filters.filter(f => ["Samsung", "Apple", "OnePlus", "Nothing", "Realme", "Xiaomi"].includes(f));
+    
+    // Filter by brand if user selected any
+    let candidates = SMARTPHONES;
+    if (preferredBrands.length > 0) {
+      candidates = SMARTPHONES.filter(s => preferredBrands.includes(s.brand));
+    }
+    
+    // If no brand match or no brands selected, use all smartphones
+    if (candidates.length === 0) candidates = SMARTPHONES;
+
+    // Pick the one with highest match score (or just the first for now as they are pre-scored)
+    return candidates[0] || SMARTPHONES[0];
+  };
+
+  const result = getBestMatch();
 
   const handleSave = () => {
     savePreset({
       id: Date.now().toString(),
-      title: `📱 ${MOCK_RESULT.name} Search`,
+      title: `📱 ${result.name} Search`,
       details: "Auto-saved comparison from wizard.",
       savedAt: "Just now"
     });
@@ -79,7 +82,7 @@ export default function SmartphoneResults() {
             
             {/* Image (Mocked) */}
             <div className="w-full md:w-1/3 aspect-[4/5] rounded-2xl bg-background border border-border overflow-hidden shrink-0 relative group">
-              <img src={MOCK_RESULT.image} alt={MOCK_RESULT.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <img src={result.image} alt={result.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
             </div>
 
@@ -87,16 +90,16 @@ export default function SmartphoneResults() {
             <div className="w-full flex flex-col">
               <div className="flex justify-between items-start mb-1">
                 <div>
-                  <h3 className="text-muted font-body font-bold text-sm mb-1">{MOCK_RESULT.brand}</h3>
-                  <h1 className="font-display font-extrabold text-3xl md:text-5xl text-text leading-tight mb-4">{MOCK_RESULT.name}</h1>
+                  <h3 className="text-muted font-body font-bold text-sm mb-1">{result.brand}</h3>
+                  <h1 className="font-display font-extrabold text-3xl md:text-5xl text-text leading-tight mb-4">{result.name}</h1>
                 </div>
-                <MatchScoreRing score={MOCK_RESULT.matchScore} />
+                <MatchScoreRing score={result.matchScore} />
               </div>
 
               <hr className="border-border/50 mb-4" />
 
               <div className="flex flex-wrap gap-2 mb-6">
-                {MOCK_RESULT.specs.map(s => (
+                {result.specs.map(s => (
                   <span key={s} className="bg-background border border-border/50 text-text font-mono text-xs px-3 py-1.5 rounded-lg shadow-sm">
                     {s}
                   </span>
@@ -110,7 +113,7 @@ export default function SmartphoneResults() {
                   <span className="text-sm">✦</span> Why This Device
                 </span>
                 <p className="font-body text-sm text-text/90 leading-relaxed mt-1">
-                  {MOCK_RESULT.whyThisDevice}
+                  {result.description}
                 </p>
               </div>
 
@@ -143,7 +146,7 @@ export default function SmartphoneResults() {
               transition={{ duration: 0.4 }}
               className="w-full"
             >
-              <PriceComparisonTable prices={MOCK_RESULT.prices} />
+              <PriceComparisonTable prices={result.prices} />
             </motion.div>
           )}
         </AnimatePresence>

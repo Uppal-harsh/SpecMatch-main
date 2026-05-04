@@ -54,9 +54,9 @@ export default function PriceComparisonTable({ prices }) {
                   href={store.link} 
                   target="_blank" 
                   rel="noreferrer"
-                  className="w-full md:w-auto px-4 py-2 rounded-lg bg-border text-text font-body text-xs font-bold hover:bg-text hover:text-background transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+                  className="w-full md:w-auto px-6 py-2.5 rounded-xl bg-accent text-background font-display text-sm font-bold hover:bg-accent/90 transition-all flex items-center justify-center gap-2 whitespace-nowrap shadow-sm hover:shadow-md"
                 >
-                  Buy Now <ExternalLink size={12} />
+                  Buy Now <ExternalLink size={14} />
                 </a>
               </div>
             </div>
