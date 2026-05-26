@@ -29,8 +29,7 @@ export default function LaptopResults() {
     // If no brand match or no brands selected, use all laptops
     if (candidates.length === 0) candidates = LAPTOPS;
 
-    // Pick the one with highest match score (or just the first for now as they are pre-scored)
-    return candidates[0] || LAPTOPS[0];
+    return [...candidates].sort((a, b) => b.matchScore - a.matchScore)[0] || LAPTOPS[0];
   };
 
   const result = getBestMatch();

@@ -1,9 +1,7 @@
 import { Syne, DM_Mono, Instrument_Sans } from "next/font/google";
 import "./globals.css";
 import PageBackground from "@/components/layout/PageBackground";
-import DockNav from "@/components/layout/DockNav";
-import FolderPresets from "@/components/layout/FolderPresets";
-import LanyardProfile from "@/components/layout/LanyardProfile";
+import AppChrome from "@/components/layout/AppChrome";
 
 const syne = Syne({
   subsets: ["latin"],
@@ -33,12 +31,7 @@ export default function RootLayout({ children }) {
         className={`${syne.variable} ${dmMono.variable} ${instrumentSans.variable} antialiased`}
       >
         <PageBackground />
-        <FolderPresets />
-        <LanyardProfile />
-        <div className="relative z-10 min-h-screen pb-32">
-          {children}
-        </div>
-        <DockNav />
+        <AppChrome>{children}</AppChrome>
       </body>
     </html>
   );
