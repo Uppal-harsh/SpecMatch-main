@@ -5,8 +5,18 @@ import { ExternalLink, Star } from "lucide-react";
 export default function PriceComparisonTable({ prices }) {
   if (!prices || prices.length === 0) return null;
 
-  const minPrice = Math.min(...prices.map(p => p.price));
-  const maxRating = Math.max(...prices.map(p => p.rating));
+  const normalizedPrices = prices
+    .map((priceRow) => ({
+      ...priceRow,
+      price: Number(priceRow.price),
+      rating: Number(priceRow.rating) || 4.2,
+    }))
+    .filter((priceRow) => Number.isFinite(priceRow.price));
+
+  if (normalizedPrices.length === 0) return null;
+
+  const minPrice = Math.min(...normalizedPrices.map(p => p.price));
+  const maxRating = Math.max(...normalizedPrices.map(p => p.rating));
 
   const formatINR = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
@@ -20,7 +30,7 @@ export default function PriceComparisonTable({ prices }) {
       </div>
       
       <div className="flex flex-col">
-        {prices.map((store, idx) => {
+        {normalizedPrices.map((store, idx) => {
           const isLowestPrice = store.price === minPrice;
           const isHighestRated = store.rating === maxRating;
           

@@ -3,36 +3,33 @@ import React, { useState } from "react";
 import { useStore } from "@/lib/store";
 import { motion, AnimatePresence } from "framer-motion";
 import MatchScoreRing from "@/components/results/MatchScoreRing";
-import PriceComparisonTable from "@/components/results/PriceComparisonTable";
+import LivePriceComparison from "@/components/results/LivePriceComparison";
 import { ArrowLeft, Bookmark, Check } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { LAPTOPS } from "@/lib/deviceData";
+import { formatBudgetRange, getBudgetRange, pickBestDevice } from "@/lib/matching";
 
 export default function LaptopResults() {
   const router = useRouter();
-  const { savePreset, filters } = useStore();
+  const { savePreset, filters, wizardAnswers } = useStore();
   const [saved, setSaved] = useState(false);
   const [showPrices, setShowPrices] = useState(true);
 
   // Dynamic selection logic
   const getBestMatch = () => {
     const preferredBrands = filters.filter(f => ["Apple", "Dell", "HP", "Lenovo", "Asus", "MSI", "Acer"].includes(f));
-    
-    // Filter by brand if user selected any
-    let candidates = LAPTOPS;
-    if (preferredBrands.length > 0) {
-      candidates = LAPTOPS.filter(l => preferredBrands.includes(l.brand));
-    }
-    
-    // If no brand match or no brands selected, use all laptops
-    if (candidates.length === 0) candidates = LAPTOPS;
 
-    return [...candidates].sort((a, b) => b.matchScore - a.matchScore)[0] || LAPTOPS[0];
+    return pickBestDevice({
+      devices: LAPTOPS,
+      preferredBrands,
+      budgetRange: getBudgetRange(wizardAnswers),
+    });
   };
 
   const result = getBestMatch();
+  const budgetRange = getBudgetRange(wizardAnswers);
 
   const handleSave = () => {
     savePreset({
@@ -54,7 +51,7 @@ export default function LaptopResults() {
           <div className="flex flex-wrap items-center gap-2 font-mono text-xs text-muted/80">
             <span className="text-text font-bold">Your Search:</span>
             <span className="bg-background px-2 py-1 rounded-md border border-border">💻 Laptop</span>
-            <span className="bg-background px-2 py-1 rounded-md border border-border">Budget: ₹1.5L</span>
+            <span className="bg-background px-2 py-1 rounded-md border border-border">Budget: {formatBudgetRange(budgetRange)}</span>
             <span className="bg-background px-2 py-1 rounded-md border border-border">Ultra-portable</span>
           </div>
           <button 
@@ -147,7 +144,7 @@ export default function LaptopResults() {
               transition={{ duration: 0.4 }}
               className="w-full"
             >
-              <PriceComparisonTable prices={result.prices} />
+              <LivePriceComparison deviceName={result.name} fallbackPrices={result.prices} />
             </motion.div>
           )}
         </AnimatePresence>

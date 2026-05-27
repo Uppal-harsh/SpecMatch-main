@@ -1,14 +1,18 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Bell,
+  CheckCircle2,
   ChevronRight,
   Gauge,
+  KeyRound,
   LogIn,
   LogOut,
   MonitorSmartphone,
+  Save,
   ScanLine,
   ShieldCheck,
   Sparkles,
@@ -61,7 +65,31 @@ export default function SettingsPage() {
     setPreference,
     lanyardMinimized,
     toggleLanyard,
+    serpApiKey,
+    setSerpApiKey,
   } = useStore();
+  const [apiKeyDraft, setApiKeyDraft] = useState("");
+  const [apiKeySaved, setApiKeySaved] = useState(false);
+
+  useEffect(() => {
+    const savedKey = window.localStorage.getItem("specmatch_serpapi_key") || "";
+    setApiKeyDraft(savedKey);
+    if (savedKey && !serpApiKey) setSerpApiKey(savedKey);
+  }, [serpApiKey, setSerpApiKey]);
+
+  const handleSaveApiKey = () => {
+    const trimmedKey = apiKeyDraft.trim();
+    window.localStorage.setItem("specmatch_serpapi_key", trimmedKey);
+    setSerpApiKey(trimmedKey);
+    setApiKeySaved(true);
+    setTimeout(() => setApiKeySaved(false), 1800);
+  };
+
+  const handleClearApiKey = () => {
+    window.localStorage.removeItem("specmatch_serpapi_key");
+    setApiKeyDraft("");
+    setSerpApiKey("");
+  };
 
   return (
     <main className="relative z-10 flex min-h-screen w-full justify-center px-4 pb-24 pt-24 sm:pt-28">
@@ -200,6 +228,50 @@ export default function SettingsPage() {
                 checked={lanyardMinimized}
                 onChange={toggleLanyard}
               />
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-border bg-card/80 p-5 shadow-2xl backdrop-blur-xl sm:p-6 lg:col-span-2">
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-accent2/20 bg-accent2/10 text-accent2">
+                <KeyRound size={20} />
+              </div>
+              <div>
+                <h2 className="font-display text-xl font-bold text-text">Price API</h2>
+                <p className="font-body text-xs text-muted">
+                  SerpAPI powers live prices from Amazon, Flipkart, Croma, and Reliance Digital.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
+              <label className="block">
+                <span className="mb-2 block font-mono text-xs uppercase tracking-widest text-muted">SerpAPI key</span>
+                <input
+                  type="password"
+                  value={apiKeyDraft}
+                  onChange={(event) => setApiKeyDraft(event.target.value)}
+                  placeholder="Paste your SerpAPI key"
+                  className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 font-body text-text outline-none transition-colors placeholder:text-muted/40 focus:border-accent"
+                />
+              </label>
+
+              <button
+                type="button"
+                onClick={handleSaveApiKey}
+                className="mt-0 flex items-center justify-center gap-2 rounded-2xl bg-accent px-5 py-3 font-display font-bold text-background transition-colors hover:bg-accent/90 md:mt-6"
+              >
+                {apiKeySaved ? <CheckCircle2 size={18} /> : <Save size={18} />}
+                {apiKeySaved ? "Saved" : "Save"}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleClearApiKey}
+                className="mt-0 rounded-2xl border border-border bg-background/55 px-5 py-3 font-display font-bold text-text transition-colors hover:border-accent3/60 md:mt-6"
+              >
+                Clear
+              </button>
             </div>
           </section>
         </div>
